@@ -1,4 +1,4 @@
 Countries
------------------
-Countries with their flags and capitals
-===========================
+====================
+An app for checking country flag and capital
+----------------
