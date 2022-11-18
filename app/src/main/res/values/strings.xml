@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Countries</string>
+    <string name="search">Search</string>
+    <string name="loading">Loading in process...</string>
+</resources>
