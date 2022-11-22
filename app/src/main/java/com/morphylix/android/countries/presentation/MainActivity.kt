@@ -3,13 +3,17 @@ package com.morphylix.android.countries.presentation
 import android.app.SearchManager
 import android.database.Cursor
 import android.database.MatrixCursor
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.BaseColumns
 import android.util.Log
 import android.view.Menu
+import android.view.View
 import android.widget.CursorAdapter
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.cursoradapter.widget.SimpleCursorAdapter
 import androidx.appcompat.widget.SearchView
@@ -17,7 +21,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.morphylix.android.countries.R
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.Dispatchers
+import com.squareup.picasso.Target
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.launch
 
 private const val SUGGESTIONS_AMOUNT = 4
@@ -33,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var countryNameTextView: TextView
     private lateinit var capitalTextView: TextView
     private lateinit var countryImageView: ImageView
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +48,7 @@ class MainActivity : AppCompatActivity() {
         countryNameTextView = findViewById(R.id.country_name_text_view)
         capitalTextView = findViewById(R.id.capital_text_view)
         countryImageView = findViewById(R.id.country_image_view)
+        progressBar = findViewById(R.id.main_progress_bar)
 
         mainActivityViewModel = ViewModelProvider(this)[MainActivityViewModel::class.java]
     }
@@ -48,32 +56,35 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         mainActivityViewModel.viewModelScope.launch {
-            mainActivityViewModel.suggestionsState.collect { state ->
+            mainActivityViewModel.mainActivityState.collect { state ->
                 when (state) {
 
-                    is MainActivitySuggestionsState.Loading -> {
-
+                    is MainActivityState.Loading -> {
+                        startLoading()
                     }
 
-                    is MainActivitySuggestionsState.SuggestionsSuccess -> {
+                    is MainActivityState.SuggestionsSuccess -> {
                         suggestions.clear()
                         for (i in state.suggestions.indices) {
                             if (i > SUGGESTIONS_AMOUNT) break
                             suggestions.add(state.suggestions[i].name)
                         }
                         updateCursor()
-                        mainActivityViewModel.setLoadingState()
                     }
 
-                    is MainActivitySuggestionsState.CapitalSuccess -> {
+                    is MainActivityState.CapitalSuccess -> {
                         capitalTextView.text = state.capital
                     }
 
-                    is MainActivitySuggestionsState.Cnn3Success -> {
+                    is MainActivityState.Cnn3Success -> {
                         postFlagImage(state.cnn3)
                     }
 
-                    is MainActivitySuggestionsState.Error -> {
+                    is MainActivityState.Synchronize -> {
+                        finishLoading()
+                    }
+
+                    is MainActivityState.Error -> {
 
                     }
                 }
@@ -112,6 +123,7 @@ class MainActivity : AppCompatActivity() {
                     cursor.getString(cursor.getColumnIndex(SearchManager.SUGGEST_COLUMN_TEXT_1))
                 searchView.setQuery(selection, false)
 
+                mainActivityViewModel.setLoadingState()
                 countryNameTextView.text = selection
                 mainActivityViewModel.getCapital(selection)
                 mainActivityViewModel.getCnn3(selection)
@@ -152,15 +164,45 @@ class MainActivity : AppCompatActivity() {
         searchView.suggestionsAdapter.changeCursor(cursor)
     }
 
-    fun postFlagImage(cnn3: String) {
+    private fun postFlagImage(cnn3: String) {
 
         Log.i(TAG, "cnn3 is $cnn3")
         val url = FLAGS_URL + cnn3
 
+
+        val target = object : Target {
+            override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
+                countryImageView.setImageBitmap(bitmap)
+                mainActivityViewModel.synchronize()
+            }
+
+            override fun onBitmapFailed(errorDrawable: Drawable?) {
+
+            }
+
+            override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
+
+            }
+        }
         Picasso.with(this)
             .load(url)
             .placeholder(com.google.android.material.R.drawable.design_password_eye)
             .error(com.google.android.material.R.drawable.design_password_eye)
-            .into(countryImageView)
+            .into(target)
+    }
+
+
+    private fun startLoading() {
+        progressBar.visibility = View.VISIBLE
+        countryImageView.visibility = View.GONE
+        countryNameTextView.visibility = View.GONE
+        capitalTextView.visibility = View.GONE
+    }
+
+    private fun finishLoading() {
+        progressBar.visibility = View.GONE
+        countryImageView.visibility = View.VISIBLE
+        countryNameTextView.visibility = View.VISIBLE
+        capitalTextView.visibility = View.VISIBLE
     }
 }

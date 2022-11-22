@@ -3,7 +3,6 @@ package com.morphylix.android.countries.presentation
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.morphylix.android.countries.domain.model.network.NetworkEntityMapper
 import com.morphylix.android.countries.domain.usecase.SearchCountriesUseCase
 import com.morphylix.android.countries.domain.usecase.SearchSubmitUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,10 +13,10 @@ private const val TAG = "MainActivityViewModel"
 
 class MainActivityViewModel : ViewModel() {
 
-    private var _suggestionsState =
-        MutableStateFlow<MainActivitySuggestionsState>(MainActivitySuggestionsState.Loading)
-    val suggestionsState: StateFlow<MainActivitySuggestionsState>
-        get() = _suggestionsState
+    private var _mainActivityState =
+        MutableStateFlow<MainActivityState>(MainActivityState.Loading)
+    val mainActivityState: StateFlow<MainActivityState>
+        get() = _mainActivityState
     private val searchCountriesUseCase = SearchCountriesUseCase()
     private val searchSubmitUseCase = SearchSubmitUseCase()
 
@@ -25,8 +24,8 @@ class MainActivityViewModel : ViewModel() {
         viewModelScope.launch {
             val suggestions = searchCountriesUseCase.execute(name)
 
-            _suggestionsState.value =
-                MainActivitySuggestionsState.SuggestionsSuccess(suggestions)
+            _mainActivityState.value =
+                MainActivityState.SuggestionsSuccess(suggestions)
             Log.i(TAG, "got ${suggestions.size}")
         }
     }
@@ -34,19 +33,23 @@ class MainActivityViewModel : ViewModel() {
     fun getCapital(name: String) {
         viewModelScope.launch {
             val country = searchCountriesUseCase.execute(name)
-            _suggestionsState.value = MainActivitySuggestionsState.CapitalSuccess(country[0].capital)
+            _mainActivityState.value = MainActivityState.CapitalSuccess(country[0].capital)
         }
     }
 
     fun getCnn3(name: String) {
         viewModelScope.launch {
             val country = searchSubmitUseCase.execute(name)
-            _suggestionsState.value = MainActivitySuggestionsState.Cnn3Success(country.cnn3)
+            _mainActivityState.value = MainActivityState.Cnn3Success(country.cnn3)
         }
     }
 
+    fun synchronize() {
+        _mainActivityState.value = MainActivityState.Synchronize
+    }
+
     fun setLoadingState() {
-        _suggestionsState.value = MainActivitySuggestionsState.Loading
+        _mainActivityState.value = MainActivityState.Loading
     }
 
 }

@@ -6,6 +6,16 @@
     android:layout_height="match_parent"
     tools:context=".presentation.MainActivity">
 
+    <ProgressBar
+        android:id="@+id/main_progress_bar"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="gone"/>
+
     <com.google.android.material.textview.MaterialTextView
         style="@style/textStyle"
         android:id="@+id/country_name_text_view"
