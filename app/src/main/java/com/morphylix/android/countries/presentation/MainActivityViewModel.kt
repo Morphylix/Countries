@@ -14,7 +14,7 @@ private const val TAG = "MainActivityViewModel"
 class MainActivityViewModel : ViewModel() {
 
     private var _mainActivityState =
-        MutableStateFlow<MainActivityState>(MainActivityState.Loading)
+        MutableStateFlow<MainActivityState>(MainActivityState.Started)
     val mainActivityState: StateFlow<MainActivityState>
         get() = _mainActivityState
     private val searchCountriesUseCase = SearchCountriesUseCase()

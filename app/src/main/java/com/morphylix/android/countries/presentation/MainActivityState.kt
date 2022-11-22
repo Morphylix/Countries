@@ -4,6 +4,8 @@ import com.morphylix.android.countries.domain.model.domain.Country
 
 sealed class MainActivityState {
 
+    object Started: MainActivityState()
+
     object Loading: MainActivityState()
 
     class SuggestionsSuccess(val suggestions: List<Country>): MainActivityState()

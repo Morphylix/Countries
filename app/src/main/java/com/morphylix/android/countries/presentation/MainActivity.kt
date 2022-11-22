@@ -59,6 +59,10 @@ class MainActivity : AppCompatActivity() {
             mainActivityViewModel.mainActivityState.collect { state ->
                 when (state) {
 
+                    is MainActivityState.Started -> {
+
+                    }
+
                     is MainActivityState.Loading -> {
                         startLoading()
                     }
