@@ -10,7 +10,8 @@ class NetworkEntityMapper : EntityMapper<Country, CountryNetworkEntity> {
 
     override fun mapFromEntity(entity: CountryNetworkEntity) = Country(
         name = entity.name,
-        capital = entity.capital
+        capital = entity.capital,
+        cnn3 = entity.cnn3
     )
 
     fun mapFromEntityList(entityList: List<CountryNetworkEntity>): List<Country> {

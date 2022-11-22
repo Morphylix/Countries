@@ -6,6 +6,7 @@ import android.database.MatrixCursor
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.BaseColumns
+import android.util.Log
 import android.view.Menu
 import android.widget.CursorAdapter
 import android.widget.ImageView
@@ -21,6 +22,7 @@ import kotlinx.coroutines.launch
 
 private const val SUGGESTIONS_AMOUNT = 4
 private const val FLAGS_URL = "https://countryflagsapi.com/png/"
+private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity() {
 
@@ -48,9 +50,11 @@ class MainActivity : AppCompatActivity() {
         mainActivityViewModel.viewModelScope.launch {
             mainActivityViewModel.suggestionsState.collect { state ->
                 when (state) {
+
                     is MainActivitySuggestionsState.Loading -> {
 
                     }
+
                     is MainActivitySuggestionsState.SuggestionsSuccess -> {
                         suggestions.clear()
                         for (i in state.suggestions.indices) {
@@ -60,9 +64,15 @@ class MainActivity : AppCompatActivity() {
                         updateCursor()
                         mainActivityViewModel.setLoadingState()
                     }
+
                     is MainActivitySuggestionsState.CapitalSuccess -> {
                         capitalTextView.text = state.capital
                     }
+
+                    is MainActivitySuggestionsState.Cnn3Success -> {
+                        postFlagImage(state.cnn3)
+                    }
+
                     is MainActivitySuggestionsState.Error -> {
 
                     }
@@ -104,7 +114,8 @@ class MainActivity : AppCompatActivity() {
 
                 countryNameTextView.text = selection
                 mainActivityViewModel.getCapital(selection)
-                postFlagImage(selection)
+                mainActivityViewModel.getCnn3(selection)
+
 
                 return true
             }
@@ -141,8 +152,10 @@ class MainActivity : AppCompatActivity() {
         searchView.suggestionsAdapter.changeCursor(cursor)
     }
 
-    fun postFlagImage(name: String) {
-        val url = FLAGS_URL + name
+    fun postFlagImage(cnn3: String) {
+
+        Log.i(TAG, "cnn3 is $cnn3")
+        val url = FLAGS_URL + cnn3
 
         Picasso.with(this)
             .load(url)

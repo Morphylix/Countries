@@ -10,6 +10,8 @@ sealed class MainActivitySuggestionsState {
 
     class CapitalSuccess(val capital: String): MainActivitySuggestionsState()
 
+    class Cnn3Success(val cnn3: String): MainActivitySuggestionsState()
+
     class Error(e: Exception): MainActivitySuggestionsState()
 
 }
