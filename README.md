@@ -10,6 +10,8 @@ Learned and worked with:
 - StateFlow
 - Coroutines
 
+TODO: DI
+
 Screenshots:
 ------------------------
 ![](img/1.png)
